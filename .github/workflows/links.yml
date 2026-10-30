@@ -1,0 +1,19 @@
+name: Links
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 1 * *'
+
+jobs:
+  lychee:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link-Check
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --config lychee.toml '**/*.md'
+          fail: true

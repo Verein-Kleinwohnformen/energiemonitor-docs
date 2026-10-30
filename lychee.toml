@@ -1,0 +1,10 @@
+# Link-Check fuer die Doku
+max_retries = 2
+timeout = 20
+accept = ["200..=299", "403", "429"]
+exclude = [
+  "^mailto:",
+  "^http://localhost",
+  # Die Cloud-Run-URL der API antwortet auf GET / nicht mit 200
+  "run\\.app",
+]
