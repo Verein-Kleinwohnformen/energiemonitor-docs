@@ -21,7 +21,7 @@ Dies ist die **einzige Definition** der Messpunkte und Sensor-IDs. Die Repos ver
 | K2 | Aussentemperatur Nord, Schatten | °C | Komfort |
 | K3 | Luftfeuchtigkeit, Lieblingsort | % RH | Komfort |
 | K4 | CO2-Gehalt, Lieblingsort | ppm | Komfort |
-| D1 | Gesamtwasserverbrauch | m³ | Wasser |
+| D1 | Gesamtwasserverbrauch | L | Wasser |
 | NA | Nicht definiert | | |
 
 Warmwasser muss getrennt von der Heizung erfasst werden (Strom des Elektroeinsatzes oder Wärmezähler).
@@ -35,7 +35,7 @@ Warmwasser muss getrennt von der Heizung erfasst werden (Strom des Elektroeinsat
 | Netatmo Wetterstation | `netatmo` | Innen-/Aussentemperatur, Feuchte, CO2, Druck, Lärm, Batterie, Funksignal | K0 (K1 bis K4) | produktiv |
 | Victron GX (Cerbo, Venus) | `victron` | power | E1, E2, E3 | produktiv |
 | Sensirion Smart Gadgets (BLE) | über MQTT `energiemonitor/{humi,co2,aqi}/{name}/…` | Temperatur, Feuchte, CO2, VOC, RSSI, Batterie | K1, K3, K4 | produktiv seit Container v2.7.4 |
-| Wasserzähler | (prüfen) | Verbrauch in m³ | D1 | im Test, Details (prüfen) |
+| Sentinum Apollon (Füllstand Wassertank, mioty) | `apollon` | level_liter, level_percent, water_use_l, Rohdistanzen in mm | D1 | im Test, siehe [R&D-Notiz](rnd-mioty-apollon.md) |
 
 ## Intervalle
 

@@ -33,6 +33,8 @@ Sensoren liefern Messwerte an eine Edgebox mit BalenaOS. Dort puffert Node-RED d
 
 Die Messpunkte (E1, E2, I1, K0 usw.) sind in einem [Glossar](docs/messpunkte.md) definiert. Das Glossar ist die einzige Quelle, die anderen Repos verlinken darauf.
 
+Forschungs- und Entwicklungsnotizen: [mioty-Basisstation und Sentinum Apollon (Wassertank D1)](docs/rnd-mioty-apollon.md).
+
 ## Die Repos
 
 | Repo | Rolle | Status |
