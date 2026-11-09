@@ -60,6 +60,8 @@ Zeitstempel sind Millisekunden (UTC). Einzelne Werte können einen eigenen Zeits
 ## Firestore-Struktur
 
 ```
+/devices/{device_id}                                   Platzhalter (device_id, note, created_at)
+/devices/{device_id}/telemetry/{year}                  Platzhalter pro Jahr
 /devices/{device_id}/telemetry/{year}/{month}/{uuid}   Batch-Dokument, bis 2000 Datenpunkte
 /devices/{device_id}/metering_points/{mp}              Sensortypen, first_seen, last_seen, Wertfelder
 /devices/{device_id}/manual/{year}/data/{entry}        manuelle Einträge aus der App
@@ -68,6 +70,8 @@ Zeitstempel sind Millisekunden (UTC). Einzelne Werte können einen eigenen Zeits
 ```
 
 Die Telemetrie wird ausschliesslich über die API geschrieben. Lesen und Schreiben in der App ist über die Firestore-Rules an `monitor_read` und `monitor_edit` gebunden.
+
+**Platzhalter-Dokumente:** Firestore legt Elterndokumente nicht selbst an. Ohne sie erscheinen `devices/{id}` und die Jahresdokumente in der Konsole kursiv (Geister-Dokumente), und `GET devices` liefert ohne `showMissing` nichts. Die Platzhalter für `emon01` und `emon03` wurden am 9. November 2026 einmalig angelegt: `devices/{id}`, `telemetry/{Jahr}` und `manual/{Jahr}` (nur Jahre mit Daten). Sie enthalten nur `device_id`, `note` und `created_at`. API und App lesen und schreiben sie nicht. Bei einem neuen Gerät oder Jahreswechsel fehlen sie wieder, bis die API sie anlegt (siehe [Backlog](../BACKLOG.md)). Die Messpunkte stehen unter `devices/{id}/metering_points`.
 
 ## Bekannte Grenzen
 

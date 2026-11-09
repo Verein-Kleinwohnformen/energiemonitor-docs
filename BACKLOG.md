@@ -15,6 +15,20 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
   4. **Start-Warnungen prüfen:** `node-red-contrib-noble` (fehlendes `bluetooth-hci-socket`) und `node-red-contrib-balena` (depDevices/depApps nicht gefunden) erscheinen bei jedem Start. Entfernen, falls nicht genutzt.
   5. **Fehler beim Start:** `[function:Decode Netatmo] TypeError: Cannot read properties of undefined (reading 'devices')` direkt nach dem Start, vermutlich die erste Antwort vor gültigem Token. Abfangen statt als Fehler loggen.
 
+### API: Elterndokumente in Firestore anlegen (Geister-Dokumente)
+
+- **Repo:** energiemonitor-api, `src/services/firebase_service.py`
+- **Befund (9. November 2026):** In der Firestore-Konsole erscheinen `devices/emon01` und `devices/emon03` kursiv, ebenso die Jahre `telemetry/2025`, `telemetry/2026` und `manual/2025`, `manual/2026`. Diese Dokumente existieren nicht, nur ihre Unterkollektionen. Die Konsole zeigt sie darum schlecht an, und `GET devices` liefert ohne `showMissing` nichts.
+- **Ursache:** Die API schreibt nur drei Pfade: `devices/{id}/metering_points/{mp}` (`_update_metering_point_metadata`, `update_data_quality`) und `devices/{id}/telemetry/{jahr}/{monat}/{uuid}` (`_write_documents`). Das Elterndokument `devices/{id}` und das Jahresdokument legt nichts an. Der README-Hinweis "kein separates Device-Dokument" war eine bewusste Sparmassnahme, hat aber diese Nebenwirkung. Die App kann es nicht beheben: `firestore.rules` hat keine Regel für `devices/{id}` und `manual/{jahr}`, also wäre Schreiben dort verboten.
+- **Einmalig (ohne Codeänderung):** Platzhalter für die bestehenden 9 Pfade per Skript anlegen (`exists=false`, überschreibt nichts). Siehe Plan vom 9. November 2026.
+- **Dauerhaft in der API:**
+  1. Beim ersten Schreiben pro Gerät `devices/{id}` und pro Telemetrie-Jahr `devices/{id}/telemetry/{jahr}` mit `create()` anlegen und `AlreadyExists` ignorieren. Neue Geräte und der Jahreswechsel funktionieren dann ohne Handarbeit.
+  2. Vorhandensein pro Prozess in einem Set merken (analog `_metering_point_metadata_cache`, aber über Requests hinweg gültig, weil die Dokumente dauerhaft bleiben). Kosten: ein zusätzlicher Schreibvorgang pro Gerät und Jahr, danach keiner mehr.
+  3. Inhalt minimal: `device_id`, `created_at`. Kein Spiegel der Messpunkte, die Liste würde veralten.
+  4. `manual/{jahr}` schreibt die App. Dafür entweder eine Rule für das Jahresdokument ergänzen (nur `canEditDevice`) oder die Platzhalter beim Onboarding per Skript anlegen.
+  5. Test in `tests/test_telemetry.py`: Erster Request legt Eltern- und Jahresdokument an, der zweite schreibt sie nicht noch einmal.
+  6. README (Firestore Datenstruktur) und `docs/architektur.md` anpassen.
+
 ## Niedrig
 
 ### Persistenter Kontextspeicher für Node-RED (D1-Tankfilter)
