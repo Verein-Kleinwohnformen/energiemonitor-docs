@@ -2,6 +2,19 @@
 
 Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 
+## Mittel
+
+### Logs aufräumen: nur Start, Warnungen und Fehler
+
+- **Ziel:** In `balena device logs` sieht man im Normalbetrieb nur, dass alles korrekt gestartet ist, dazu Warnungen und Fehler. Keine internen Zustände (BLE-Scans, jeder geschriebene Messpunkt).
+- **Befund emon01 (9. November 2026):** Die 1000 Zeilen Log-Historie reichen nur rund 7 Minuten zurück.
+- **Massnahmen:**
+  1. **BLE-Scanner (Sofortmassnahme, ohne Deploy):** Auf emon01 überschreibt die Gerätevariable `DEBUG_MODE=2` (Service `ble-scanner`) den Flottenwert `0`. Das schaltet auch das Debug-Logging von `bleak` (D-Bus-Signale) ein. Gerätevariable entfernen. Danach im Scanner (`energiemonitor-balena-nodered/ble-scanner`) die Zeilen pro Messung ("Temperature ticks", "First 2 bytes…", "Published 4 values") von INFO auf DEBUG senken. Bei INFO nur Start, gefundene Geräte und Fehler.
+  2. **KWF-Connector (`kwf-energiemonitor-db`):** "Inserted new record…", "Updated existing record…" und "Processed data from…" für jeden Datenpunkt von `node.log` auf `node.debug` umstellen. Pro Upload eine Zusammenfassung loggen ("N Datensätze gesendet, HTTP 200"). Fehler bleiben `node.error`. Danach npm-Release und Update der Library in Node-RED.
+  3. **Node-RED:** `LOGLEVEL` bleibt `info` (settings.js), damit Start und Verbindungen sichtbar bleiben. Prüfen, welche Flows `node.warn` für Zustände nutzen.
+  4. **Start-Warnungen prüfen:** `node-red-contrib-noble` (fehlendes `bluetooth-hci-socket`) und `node-red-contrib-balena` (depDevices/depApps nicht gefunden) erscheinen bei jedem Start. Entfernen, falls nicht genutzt.
+  5. **Fehler beim Start:** `[function:Decode Netatmo] TypeError: Cannot read properties of undefined (reading 'devices')` direkt nach dem Start, vermutlich die erste Antwort vor gültigem Token. Abfangen statt als Fehler loggen.
+
 ## Niedrig
 
 ### Persistenter Kontextspeicher für Node-RED (D1-Tankfilter)
