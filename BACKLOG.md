@@ -2,7 +2,29 @@
 
 Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 
+## Hoch
+
+### Dev-Modus auf den Geräten ausschalten
+
+- **Befund (20. November 2026):** emon01, emon02 und emon03 laufen mit `developmentMode` (balena `os_variant: dev`). Damit sind im lokalen Netz SSH als root ohne Passwort (Port 22222) und die Engine-API offen. Alle anderen Geräte im selben Netz oder Hotspot erreichen diese Dienste.
+- **Massnahme:** Den Dev-Modus pro Gerät ausschalten (balena-Dashboard, Geräteeinstellungen, oder `developmentMode: false` in `config.json`). Danach prüfen, ob `balena device ssh` über die Cloud weiter funktioniert. Das sollte es, weil es über den VPN-Tunnel und die SSH-Keys des Kontos läuft.
+- **Dringend bei emon02**, bevor es ins Heim-WLAN kommt.
+
+### Eigene Zugangsdaten pro Gerät für emon02 und emon03
+
+- **Befund (20. November 2026):** emon02 und emon03 haben keine eigenen Gerätevariablen `USERNAME`, `PASSWORD` und `ENCRIPTION_KEY`, sie übernehmen die Flottenwerte. [Sicherheit](docs/sicherheit.md) verlangt Werte pro Gerät.
+- **emon02:** Hier ist es einfach. Es gibt noch keine Flows und keine gespeicherten Zugangsdaten (`Encrypted credentials not found`). Die drei Variablen setzen, bevor Flows deployt werden.
+- **emon03:** Vor dem Wechsel des `ENCRIPTION_KEY` prüfen, ob verschlüsselte Zugangsdaten vorhanden sind. Falls ja, nach [Schlüssel migrieren](docs/migration-verschluesselungsschluessel.md) vorgehen.
+- Der Flottenwert von `ENCRIPTION_KEY` kam am 20. November in einer lokalen Tool-Ausgabe vor. Wenn alle Geräte eigene Werte haben, den Flottenwert ebenfalls neu setzen.
+
 ## Mittel
+
+### emon02: Umstellung auf Heim-WLAN bei der Installation
+
+- **Ziel:** emon02, der Shelly Pro 3EM und die Netatmo-Station hängen im Heim-WLAN statt am Hotspot `energiemonitor`.
+- **Ablauf:** Die Installation läuft zuerst mit LAN-Kabel. Danach im Host-OS `balena-hotspot` nach `/mnt/data/balena-hotspot.bak` verschieben und `/mnt/boot/system-connections/home-wifi` (Client-Profil, `mode=infrastructure`) anlegen, dann neu starten. Shelly und Edgebox bekommen eine feste IP per DHCP-Reservierung im Router.
+- **Nachher:** `SHELLY_IP`, `NETATMO_*` und gegebenenfalls `VICTRON_*` als Gerätevariablen setzen. Flows auf fest eingetragene `10.42.0.x`-Adressen prüfen.
+- **Voraussetzung:** Dev-Modus aus (siehe oben). Seit dem 20. November nutzt emon02 die Flottenwerte mit `ant2`, also die externe Antenne.
 
 ### emon01: balenaOS ab 7.x bootet nicht
 
@@ -51,3 +73,14 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 - **Vor dem Umsetzen klären:** Wo publiziert die mioty-Basisstation (auf der Edgebox oder über Hotspot/LAN)? Falls über das Netz: Broker an das Hotspot-Interface binden statt an `127.0.0.1`.
 - **Alternative ohne Balena-Push:** Zustand im Flow mit File-Nodes nach `/data/node-red/user/` schreiben und beim Start wieder einlesen.
 - Hintergrund: [R&D-Notiz D1](docs/rnd-mioty-apollon.md)
+
+### BLE-Scanner: kein Neustart-Loop ohne Gadgets
+
+- **Repo:** energiemonitor-balena-nodered, `ble-scanner` und `docker-compose.yml`
+- **Befund (20. November 2026):** Ohne konfigurierte Gadgets beendet sich der Scanner mit Exit-Code 1 („No devices configured!“). Wegen `restart: always` startet er sofort neu: auf emon03 283-mal, auf emon02 laufend. Das füllt die Logs, und der neue Supervisor meldet das Gerät zeitweise als „reduced-functionality“.
+- **Massnahme:** Ohne Gadgets nach einer Info-Zeile im Leerlauf bleiben (zum Beispiel `sleep infinity`), statt sich zu beenden. Alternative: Exit-Code 0 und `restart: on-failure`. Danach `bauanleitung.md` und `betrieb.md` anpassen („beendet sich absichtlich“).
+
+### emon03: Hotspot-Datei ist leer
+
+- **Befund (20. November 2026):** `/mnt/boot/system-connections/balena-hotspot` auf emon03 ist 1 Byte gross, `wlan0` ist nicht verbunden. Victron und KNX laufen über LAN, darum fehlt im Moment nichts.
+- **Klären:** War das bei der Installation so gewollt? Falls später ein Sensor über WLAN dazukommt, das Profil nach [Bauanleitung](docs/bauanleitung.md) Kapitel 8 neu anlegen.
