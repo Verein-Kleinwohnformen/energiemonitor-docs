@@ -16,6 +16,8 @@ Der Container wird über Balena aktualisiert: Repo klonen, Änderungen vornehmen
 
 Bevor du den `ENCRIPTION_KEY` änderst, lies [Schlüssel migrieren](migration-verschluesselungsschluessel.md).
 
+Host-OS-Updates (balenaOS) gehen nur vorwärts und können ein Gerät bis zu einem Stromunterbruch vor Ort lahmlegen. Lies vorher [balenaOS-Versionen](balena-os-versionen.md).
+
 ## Fehlersuche
 
 | Symptom | Prüfen |
