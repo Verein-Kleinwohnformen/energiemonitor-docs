@@ -4,6 +4,17 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 
 ## Mittel
 
+### emon01: balenaOS ab 7.x bootet nicht
+
+- **Befund (20. November 2026):** Host-OS-Update auf 7.4.0+rev10 (zweimal) und 9.0.5+rev1 (einmal). emon01 hängt jedes Mal nach dem Neustart und kommt erst nach einem Stromunterbruch vor Ort auf 6.1.21 zurück (`rollback-altboot-triggered`). emon02 und emon03 laufen auf 7.4 ohne Probleme. Datenlücke emon01 am 20. November rund 16:30 bis 21:16 mit Unterbrüchen.
+- **Hauptverdacht:** Quectel-LTE-Modem (`2c7c:0125`). Es ist der einzige Hardware-Unterschied zu emon03 (gleiche Overlays, gleicher USB-Hub).
+- **Vorgehen:** Testgerät mit Modem am Arbeitsplatz mit HDMI oder serieller Konsole auf 9.x aktualisieren und den Boot beobachten. emon01 erst danach und nur mit Person vor Ort wieder aktualisieren. Siehe [balenaOS-Versionen](docs/balena-os-versionen.md).
+
+### Flottenvariable dtoverlay korrigieren
+
+- **Befund:** `RESIN_HOST_CONFIG_dtoverlay` in `energiemonitor-test` ist `"dwc2","dr_mode=host","w1-gpio"`. Das ergibt die ungültige Zeile `dtoverlay=dr_mode=host`. Richtig: `"dwc2,dr_mode=host","w1-gpio"`.
+- **Achtung:** Die Änderung schreibt `config.txt` neu und startet **alle** Geräte der Flotte neu. Zuerst auf einem Testgerät als Gerätevariable prüfen. Klären, ob `w1-gpio` gebraucht wird.
+
 ### Logs aufräumen: nur Start, Warnungen und Fehler
 
 - **Ziel:** In `balena device logs` sieht man im Normalbetrieb nur, dass alles korrekt gestartet ist, dazu Warnungen und Fehler. Keine internen Zustände (BLE-Scans, jeder geschriebene Messpunkt).
