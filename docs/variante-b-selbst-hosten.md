@@ -6,9 +6,9 @@ Mit Variante B betreibst du Cloud und App selbst. Deine Daten bleiben bei dir un
 
 1. Google-Cloud-Projekt anlegen, Firebase aktivieren.
 2. Firestore anlegen und die Security-Rules deployen.
-3. API auf Cloud Run deployen.
+3. API auf Cloud Run deployen und die Tageswerte einplanen (Cloud Scheduler).
 4. App auf Firebase Hosting deployen.
-5. Ersten Monitor und ersten User anlegen.
+5. Faktoren, ersten Monitor und ersten User anlegen.
 6. Im Monitor `KWF_URL` und `KWF_KEY` auf deine Werte setzen.
 
 ## 1. Projekt
@@ -41,6 +41,7 @@ Repo: [energiemonitor-api](https://github.com/Verein-Kleinwohnformen/energiemoni
 3. Deployen: `./deploy.sh <PROJEKT-ID>` (oder `deploy.ps1`). Das Skript setzt Region `europe-west6` und **2 GiB** Arbeitsspeicher (wegen des XLSX-Exports).
 4. Notiere die Service-URL. `KWF_URL` im Monitor ist `<SERVICE-URL>/telemetry`.
 5. Die API erlaubt per CORS nur die Domain der App. Passe die Liste in `src/main.py` an deine App-Domain an.
+6. **Tageswerte einplanen:** Übersicht und Auswertung der App lesen nur Tageswerte, die die API über `POST /aggregate` rechnet. Ohne diesen Schritt bleiben sie leer. Lege ein Dienstkonto für Cloud Scheduler an, setze in Cloud Run die Umgebungsvariablen `AGGREGATE_AUDIENCE` (Service-URL) und `AGGREGATE_INVOKERS` (E-Mail des Dienstkontos) und erstelle zwei Scheduler-Jobs (stündlich und nachts). Die Befehle stehen im [API-README](https://github.com/Verein-Kleinwohnformen/energiemonitor-api#post-aggregate-tageswerte). Für vergangene Tage gibt es `tools/backfill_daily.py`.
 
 Bekannte Grenzen: Export maximal 31 Tage, Schnitt nach UTC-Tagen, grosse XLSX-Dateien.
 
@@ -53,12 +54,13 @@ Repo: [energiemonitor-app](https://github.com/Verein-Kleinwohnformen/energiemoni
 3. `flutter build web`, dann `firebase deploy --only hosting`.
 4. Schränke den Browser-API-Key in der Google Cloud Console auf deine Domain und die benötigten APIs ein.
 
-## 5. Ersten Monitor und User anlegen
+## 5. Faktoren, ersten Monitor und User anlegen
 
-1. In der App ein Konto registrieren. Es erhält zunächst nur einen Sandbox-Monitor.
-2. In der Firestore Console unter `/monitors` ein Dokument mit der ID deiner `DEVICEID` anlegen.
-3. Im Dokument `/users/<uid>` deines Kontos die Listen `monitor_read` und `monitor_edit` um diese ID ergänzen.
-4. Auf dem Gerät `DEVICEID`, `KWF_URL` und `KWF_KEY` setzen. Sobald Daten ankommen, erscheint der Monitor online.
+1. **Faktoren:** Lege in Firestore das Dokument `/config/factors` an (Heizwerte, Primärenergie- und Gewichtungsfaktoren, Vergleichswerte). Sie stehen absichtlich nicht im Code. Eine Vorlage mit Quellenangaben steht im App-Repo in [`tool/seed_emulator.mjs`](https://github.com/Verein-Kleinwohnformen/energiemonitor-app/blob/main/tool/seed_emulator.mjs) (Abschnitt `config/factors`), das Format in [`docs/konzept/04_datenmodell.md`](https://github.com/Verein-Kleinwohnformen/energiemonitor-app/blob/main/docs/konzept/04_datenmodell.md). Ohne Heizwerte fehlen die Brennstoffe in der Auswertung.
+2. In der App ein Konto registrieren. Es erhält zunächst nur einen Sandbox-Monitor.
+3. In der Firestore Console unter `/monitors` ein Dokument mit der ID deiner `DEVICEID` anlegen (Felder `monitor_id`, `tinyhouse_name`, `tinyhouse_location`).
+4. Dir selbst die Rolle Superadmin geben: `node tool/admin/set_superadmin.mjs --project <PROJEKT-ID> <uid> --apply` im App-Repo. Danach vergibst du Lese- und Bearbeitungsrechte in der App unter *Mehr > Zugänge verwalten*, jede Änderung wird protokolliert. Ohne Superadmin: im Dokument `/users/<uid>` die Listen `monitor_read` und `monitor_edit` in der Console ergänzen.
+5. Auf dem Gerät `DEVICEID`, `KWF_URL` und `KWF_KEY` setzen. Sobald Daten ankommen, erscheint der Monitor online.
 
 ## Sicherheit
 

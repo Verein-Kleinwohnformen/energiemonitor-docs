@@ -23,6 +23,7 @@ Host-OS-Updates (balenaOS) gehen nur vorwärts und können ein Gerät bis zu ein
 | Symptom | Prüfen |
 |---|---|
 | Gerät offline in Balena | SIM/APN, Antenne, Netzwerkkabel. Host-OS-Konsole: `journalctl -u NetworkManager`, `journalctl -u ModemManager`, `mmcli -m 0` |
+| Übersicht und Auswertung leer, Systemstatus online | Tageswerte fehlen: Die Cloud rechnet sie jede volle Stunde. In Variante B: laufen die Cloud-Scheduler-Jobs, gibt es `/config/factors`? Ohne Personen unter *Mehr > Haushalt* fehlen die Werte pro Person |
 | Keine Messpunkte in der App | Node-RED-Log: erscheint „Inserted new record“? Stimmen `KWF_URL`, `KWF_KEY`, `DEVICEID`? Ist das Gerät im KWF-System angelegt? |
 | Node-RED startet ohne Flows | Log: „Failed to decrypt credentials“: der `ENCRIPTION_KEY` passt nicht zu den gespeicherten Zugangsdaten, siehe [Schlüssel migrieren](migration-verschluesselungsschluessel.md) |
 | Node-RED startet gar nicht | `PASSWORD` fehlt oder ist leer (`settings.js` beendet sich dann) |
@@ -36,7 +37,7 @@ Container im Host-OS: `balena-engine ps`, Logs im Balena-Dashboard oder `balena 
 
 ## Daten exportieren
 
-In der App: XLSX-Download für maximal 31 Tage. Der Export schneidet nach UTC-Tagen und die Dateien können über 30 MB pro Monat gross werden.
+In der App unter *Mehr > Daten herunterladen*: XLSX-Download, Zeitraum frei wählbar. Längere Zeiträume kommen als Monatsdateien (die API liefert höchstens 31 Tage pro Datei). Der Export schneidet nach UTC-Tagen und die Dateien können über 30 MB pro Monat gross werden.
 
 ## Klimasensoren
 
@@ -44,4 +45,4 @@ Innen am zentralen Lieblingsort, nicht neben Heizung oder häufig geöffneten Fe
 
 ## Sicherheitspflege
 
-Rotiere Passwörter und Schlüssel, wenn sie bekannt geworden sein könnten, und halte den Container aktuell. Siehe [Sicherheit](sicherheit.md).
+Rotiere Passwörter und Schlüssel, wenn sie bekannt geworden sein könnten, und halte den Container aktuell. Schalte die Public Device URL aus, wenn du sie nicht brauchst, und prüfe, dass kein Gerät im Dev-Modus läuft. Siehe [Sicherheit](sicherheit.md).

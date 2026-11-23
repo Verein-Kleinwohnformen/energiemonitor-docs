@@ -27,6 +27,7 @@ flowchart TD
 
     CON -- "HTTPS, stündlich<br/>Header KWF-Device-Key" --> API[energiemonitor-api<br/>Cloud Run]
     API --> FS[(Firestore)]
+    SCH[Cloud Scheduler<br/>stündlich und nachts] -- "POST /aggregate<br/>OIDC-Token" --> API
     FS --> APP[Energiemonitor-App<br/>Firebase Hosting]
     BAL[Balena Cloud<br/>Updates, Remote-Konsole, Variablen] -. verwaltet .-> Edge
 ```
@@ -37,9 +38,9 @@ flowchart TD
 - **Node-RED:** liest die Sensoren aus, aggregiert (Shelly und Victron: Abfrage jede Sekunde, Mittelwert über 10 s) und gibt die Werte an den Connector weiter.
 - **Connector** ([kwf-energiemonitor-db](https://github.com/Verein-Kleinwohnformen/kwf-energiemonitor-db)): speichert alle Messwerte lokal in SQLite und sendet sie im Intervall (Standard 1 Stunde) an die API, auch nachträglich nach einem Verbindungsunterbruch.
 - **MQTT-Broker:** Mosquitto läuft nur auf dem Gerät selbst (`127.0.0.1`) und nimmt die Werte des BLE-Scanners entgegen.
-- **API** ([energiemonitor-api](https://github.com/Verein-Kleinwohnformen/energiemonitor-api)): Flask auf Google Cloud Run. Authentifizierung über den Header `KWF-Device-Key`. Die Schlüssel liegen im Secret Manager.
-- **Firestore:** speichert Telemetrie, Messpunkt-Metadaten, manuelle Einträge und Benutzerrechte.
-- **App** ([energiemonitor-app](https://github.com/Verein-Kleinwohnformen/energiemonitor-app)): Flutter Web mit Firebase Auth. Zeigt Messpunkte, Diagramme und erlaubt den XLSX-Export (maximal 31 Tage).
+- **API** ([energiemonitor-api](https://github.com/Verein-Kleinwohnformen/energiemonitor-api)): Flask auf Google Cloud Run. Die Geräte melden sich mit dem Header `KWF-Device-Key` an, die Schlüssel liegen im Secret Manager. Dazu rechnet die API aus den Rohdaten **Tageswerte** (Strom nach Herkunft, Heizen, Wohnklima, bewohnte Tage, Brennstoffe). Diesen Endpunkt `/aggregate` darf nur Cloud Scheduler aufrufen (stündlich für heute, nachts für die letzten drei Tage).
+- **Firestore:** speichert Telemetrie, Tageswerte, Messpunkt-Metadaten, manuelle Einträge, Haushalt, Faktoren und Benutzerrechte.
+- **App** ([energiemonitor-app](https://github.com/Verein-Kleinwohnformen/energiemonitor-app)): Flutter-Web-App mit Firebase Auth und vier Bereichen: Übersicht, Auswertung, Erfassen (Brennstoffe ohne Zähler) und Mehr (Systemstatus, Haushalt, Mess-Schema, XLSX-Export). Übersicht und Auswertung lesen nur die Tageswerte, nie Rohdaten. Bilder: siehe [README](../README.md#so-sieht-die-app-aus).
 - **Balena Cloud:** Geräteverwaltung, Updates, Variablen und Remote-Konsole. Gratis bis 10 Geräte.
 
 ## Datenformat
@@ -63,18 +64,23 @@ Zeitstempel sind Millisekunden (UTC). Einzelne Werte können einen eigenen Zeits
 /devices/{device_id}                                   Platzhalter (device_id, note, created_at)
 /devices/{device_id}/telemetry/{year}                  Platzhalter pro Jahr
 /devices/{device_id}/telemetry/{year}/{month}/{uuid}   Batch-Dokument, bis 2000 Datenpunkte
-/devices/{device_id}/metering_points/{mp}              Sensortypen, first_seen, last_seen, Wertfelder
+/devices/{device_id}/metering_points/{mp}              Sensortypen, first_seen, last_seen, Wertfelder, Datenqualität
+/devices/{device_id}/daily/{YYYY-MM-DD}                Tageswerte (Lokalzeit), von der API gerechnet
+/devices/{device_id}/aggregation/{doc}                 Stand der Brennstoff-Verteilung, nur Backend
 /devices/{device_id}/manual/{year}/data/{entry}        manuelle Einträge aus der App
-/monitors/{monitorId}                                  Monitor-Stammdaten
+/monitors/{monitorId}                                  Monitor-Stammdaten, Studienmodus
+/monitors/{monitorId}/household/{entry}                Personen, Wohnfläche, Label-Wert, mit "gültig ab"
+/config/factors                                        Heizwerte, Primärenergie- und Gewichtungsfaktoren
 /users/{uid}                                           monitor_read[], monitor_edit[]
+/admin_log/{entry}                                     Protokoll jeder Änderung an Zugriffen
 ```
 
-Die Telemetrie wird ausschliesslich über die API geschrieben. Lesen und Schreiben in der App ist über die Firestore-Rules an `monitor_read` und `monitor_edit` gebunden.
+Telemetrie und Tageswerte schreibt ausschliesslich die API. Lesen und Schreiben in der App ist über die [Firestore-Rules](https://github.com/Verein-Kleinwohnformen/energiemonitor-app/blob/main/firestore.rules) an `monitor_read` und `monitor_edit` gebunden. Es gibt keine Rolle, die alle Häuser sieht: Ein Superadmin (Custom Claim) verwaltet Zugriffe, sieht aber Messdaten nur mit eigenem Eintrag in `monitor_read`. Das Format der Tageswerte steht im App-Repo unter [`docs/konzept/04_datenmodell.md`](https://github.com/Verein-Kleinwohnformen/energiemonitor-app/blob/main/docs/konzept/04_datenmodell.md).
 
 **Platzhalter-Dokumente:** Firestore legt Elterndokumente nicht selbst an. Ohne sie erscheinen `devices/{id}` und die Jahresdokumente in der Konsole kursiv (Geister-Dokumente), und `GET devices` liefert ohne `showMissing` nichts. Die Platzhalter für `emon01` und `emon03` wurden am 9. November 2026 einmalig angelegt: `devices/{id}`, `telemetry/{Jahr}` und `manual/{Jahr}` (nur Jahre mit Daten). Sie enthalten nur `device_id`, `note` und `created_at`. API und App lesen und schreiben sie nicht. Bei einem neuen Gerät oder Jahreswechsel fehlen sie wieder, bis die API sie anlegt (siehe [Backlog](../BACKLOG.md)). Die Messpunkte stehen unter `devices/{id}/metering_points`.
 
 ## Bekannte Grenzen
 
-- Der Export ist auf **31 Tage** begrenzt und schneidet nach UTC-Tagen. Eine XLSX-Datei kann über 30 MB pro Monat gross werden.
-- Aggregation und Plausibilitätschecks laufen heute in den Node-RED-Flows, nicht im Connector.
+- Die API exportiert höchstens **31 Tage** pro Aufruf und schneidet nach UTC-Tagen. Längere Zeiträume holt die App als Monatsdateien. Eine XLSX-Datei kann über 30 MB pro Monat gross werden.
+- Mittelwerte über 10 s und Plausibilitätschecks laufen in den Node-RED-Flows, nicht im Connector. Tageswerte rechnet die API.
 - Netatmo ist von der Netatmo-Cloud abhängig. Alternative im Kit: Sensirion BLE.

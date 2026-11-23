@@ -17,6 +17,12 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 - **emon03:** Vor dem Wechsel des `ENCRIPTION_KEY` prüfen, ob verschlüsselte Zugangsdaten vorhanden sind. Falls ja, nach [Schlüssel migrieren](docs/migration-verschluesselungsschluessel.md) vorgehen.
 - Der Flottenwert von `ENCRIPTION_KEY` kam am 20. November in einer lokalen Tool-Ausgabe vor. Wenn alle Geräte eigene Werte haben, den Flottenwert ebenfalls neu setzen.
 
+### Download-Schlüssel der App vom Device-Key trennen
+
+- **Befund (23. November 2026):** Die App holt den XLSX-Download mit dem Schlüssel aus `users/{uid}.monitor_api_keys`. Das ist derselbe Device-Key, mit dem der Monitor `POST /telemetry` aufruft. Wer in der App exportieren darf, sieht den Schlüssel im Browser und könnte damit Messwerte für dieses Haus senden (Studiendaten verfälschen).
+- **Massnahme:** `GET /export` nimmt statt des Device-Keys ein Firebase-ID-Token (`Authorization: Bearer`), prüft es mit dem Admin SDK und erlaubt nur Geräte aus `monitor_read` des Users. Danach `monitor_api_keys` aus App, Rules und User-Dokumenten entfernen und die betroffenen Device-Keys neu setzen.
+- **Repos:** energiemonitor-api (`src/api/routes/export.py`, neue Middleware), energiemonitor-app (`lib/more/export_page.dart`, `lib/user.dart`, `firestore.rules`).
+
 ## Mittel
 
 ### emon02: Umstellung auf Heim-WLAN bei der Installation
@@ -61,6 +67,33 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
   4. `manual/{jahr}` schreibt die App. Dafür entweder eine Rule für das Jahresdokument ergänzen (nur `canEditDevice`) oder die Platzhalter beim Onboarding per Skript anlegen.
   5. Test in `tests/test_telemetry.py`: Erster Request legt Eltern- und Jahresdokument an, der zweite schreibt sie nicht noch einmal.
   6. README (Firestore Datenstruktur) und `docs/architektur.md` anpassen.
+
+### API: Aufräumen nach der Sicherheitsanalyse
+
+- **Repo:** energiemonitor-api
+- **Befund (23. November 2026):**
+  1. `GET /buffer/stats` antwortet ohne Anmeldung, `/buffer/flush` und `/buffer/flush-legacy` sind veraltet. Entfernen.
+  2. `telemetry.py` schreibt auf Debug-Stufe alle Request-Header ins Log, also auch den Device-Key. Zeile entfernen.
+  3. Fehlerantworten enthalten den Text der Python-Exception (`Internal server error: …`). Nur eine allgemeine Meldung zurückgeben, Details ins Log.
+  4. Der Device-Key wird mit `==` verglichen. Mit `hmac.compare_digest` vergleichen.
+  5. Keine Ratenbegrenzung für falsche Device-Keys. Mit 32 und mehr zufälligen Zeichen unkritisch, aber Fehlversuche loggen und in Cloud Monitoring alarmieren.
+
+### Connector: Device-Key als Credential speichern
+
+- **Repo:** kwf-energiemonitor-db
+- **Befund (23. November 2026):** `apiKey` ist ein normales Node-Feld (Standard `${KWF_KEY}`). Wer den Schlüssel direkt einträgt, hat ihn im Klartext in `flows.json`, und mit der Projektfunktion von Node-RED landet er in Git.
+- **Massnahme:** `apiKey` als `credentials` mit Typ `password` registrieren, `${KWF_KEY}` als Standard behalten. Release als neue npm-Version, Doku anpassen.
+
+### Flows der Testgeräte aus dem öffentlichen Repo nehmen
+
+- **Repo:** energiemonitor-nodered-flows
+- **Befund (23. November 2026):** Die Branches der Testgeräte enthalten den vollständigen Flow eines bewohnten Hauses mit Angaben zum Heimnetz und zu den Geräten dort. Schlüssel oder Passwörter sind keine darin. Solche Angaben gehören trotzdem nicht in ein öffentliches Repo (siehe [Sicherheit](docs/sicherheit.md)).
+- **Massnahme:** Für die Flows der Geräte ein privates Repo anlegen, die Node-RED-Projekte der Geräte darauf umstellen, danach die Geräte-Branches im öffentlichen Repo löschen. Im öffentlichen Repo bleibt `master` als Vorlage.
+
+### Importierbare Beispiel-Flows pro Sensor
+
+- **Befund (23. November 2026, Nutzer-Analyse):** Die [Bauanleitung](docs/bauanleitung.md) sagt „pro Sensor brauchst du einen kleinen Flow“, liefert aber keine aktuellen Flows. Selbstbauende ohne Node-RED-Erfahrung bleiben hier stecken.
+- **Massnahme:** Pro Sensor (Shelly Pro 3EM, PZEM-017, Netatmo, Victron GX, BLE-Gadgets) einen kleinen Flow als JSON im Connector-Repo unter `examples/`, ohne IPs und Schlüssel, nur mit `${…}`-Variablen. Node-RED zeigt sie dann unter *Import > Examples*. Fotos vom Einbau ergänzen (Bauanleitung Kapitel 5, Freigabe nötig).
 
 ## Niedrig
 
