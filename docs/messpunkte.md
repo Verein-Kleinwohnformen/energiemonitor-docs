@@ -31,6 +31,7 @@ Warmwasser muss getrennt von der Heizung erfasst werden (Strom des Elektroeinsat
 | Sensor | `sensor_id` | Messgrössen | Typische Messpunkte | Status |
 |---|---|---|---|---|
 | Shelly Pro 3EM | `shelly-3em-pro` | voltage, current, act_power, aprt_power, pf je Phase | E1, E2, E3, A1, I1, I2, I3 | produktiv |
+| Shelly 1PM Gen4 | `shelly-1pm-gen4` | act_power, voltage, current, energy_total_wh, relay_on, device_temperature | I1 (Elektroboiler), weitere Einzelverbraucher | im Test seit November 2026 |
 | Peacefair PZEM-017 (DC) | `pzem-017` | voltage, current, power | E3 und weitere DC-Punkte | produktiv |
 | Netatmo Wetterstation | `netatmo` | Innen-/Aussentemperatur, Feuchte, CO2, Druck, Lärm, Batterie, Funksignal | K0 (K1 bis K4) | produktiv |
 | Victron GX (Cerbo, Venus) | `victron` | power | E1, E2, E3 | produktiv |
