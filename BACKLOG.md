@@ -4,18 +4,7 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 
 ## Hoch
 
-### Dev-Modus auf den Geräten ausschalten
-
-- **Befund (20. November 2026):** emon01, emon02 und emon03 laufen mit `developmentMode` (balena `os_variant: dev`). Damit sind im lokalen Netz SSH als root ohne Passwort (Port 22222) und die Engine-API offen. Alle anderen Geräte im selben Netz oder Hotspot erreichen diese Dienste.
-- **Massnahme:** Den Dev-Modus pro Gerät ausschalten (balena-Dashboard, Geräteeinstellungen, oder `developmentMode: false` in `config.json`). Danach prüfen, ob `balena device ssh` über die Cloud weiter funktioniert. Das sollte es, weil es über den VPN-Tunnel und die SSH-Keys des Kontos läuft.
-- **Dringend bei emon02**, bevor es ins Heim-WLAN kommt.
-
-### Eigene Zugangsdaten pro Gerät für emon02 und emon03
-
-- **Befund (20. November 2026):** emon02 und emon03 haben keine eigenen Gerätevariablen `USERNAME`, `PASSWORD` und `ENCRIPTION_KEY`, sie übernehmen die Flottenwerte. [Sicherheit](docs/sicherheit.md) verlangt Werte pro Gerät.
-- **emon02:** Hier ist es einfach. Es gibt noch keine Flows und keine gespeicherten Zugangsdaten (`Encrypted credentials not found`). Die drei Variablen setzen, bevor Flows deployt werden.
-- **emon03:** Vor dem Wechsel des `ENCRIPTION_KEY` prüfen, ob verschlüsselte Zugangsdaten vorhanden sind. Falls ja, nach [Schlüssel migrieren](docs/migration-verschluesselungsschluessel.md) vorgehen.
-- Der Flottenwert von `ENCRIPTION_KEY` kam am 20. November in einer lokalen Tool-Ausgabe vor. Wenn alle Geräte eigene Werte haben, den Flottenwert ebenfalls neu setzen.
+Zurzeit nichts.
 
 ## Mittel
 
@@ -24,7 +13,7 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 - **Ziel:** emon02, der Shelly Pro 3EM und die Netatmo-Station hängen im Heim-WLAN statt am Hotspot `energiemonitor`.
 - **Ablauf:** Die Installation läuft zuerst mit LAN-Kabel. Danach im Host-OS `balena-hotspot` nach `/mnt/data/balena-hotspot.bak` verschieben und `/mnt/boot/system-connections/home-wifi` (Client-Profil, `mode=infrastructure`) anlegen, dann neu starten. Shelly und Edgebox bekommen eine feste IP per DHCP-Reservierung im Router.
 - **Nachher:** `SHELLY_IP`, `NETATMO_*` und gegebenenfalls `VICTRON_*` als Gerätevariablen setzen. Flows auf fest eingetragene `10.42.0.x`-Adressen prüfen.
-- **Voraussetzung:** Dev-Modus aus (siehe oben). Seit dem 20. November nutzt emon02 die Flottenwerte mit `ant2`, also die externe Antenne.
+- Seit dem 20. November nutzt emon02 die Flottenwerte mit `ant2`, also die externe Antenne.
 
 ### emon01: balenaOS ab 7.x bootet nicht
 
@@ -61,6 +50,11 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
   4. `manual/{jahr}` schreibt die App. Dafür entweder eine Rule für das Jahresdokument ergänzen (nur `canEditDevice`) oder die Platzhalter beim Onboarding per Skript anlegen.
   5. Test in `tests/test_telemetry.py`: Erster Request legt Eltern- und Jahresdokument an, der zweite schreibt sie nicht noch einmal.
   6. README (Firestore Datenstruktur) und `docs/architektur.md` anpassen.
+
+### Importierbare Beispiel-Flows pro Sensor
+
+- **Befund (23. November 2026, Nutzer-Analyse):** Die [Bauanleitung](docs/bauanleitung.md) sagt „pro Sensor brauchst du einen kleinen Flow“, liefert aber keine aktuellen Flows. Selbstbauende ohne Node-RED-Erfahrung bleiben hier stecken.
+- **Massnahme:** Pro Sensor (Shelly Pro 3EM, PZEM-017, Netatmo, Victron GX, BLE-Gadgets) einen kleinen Flow als JSON im Connector-Repo unter `examples/`, ohne IPs und Schlüssel, nur mit `${…}`-Variablen. Node-RED zeigt sie dann unter *Import > Examples*. Dazu Fotos vom Einbau (Bauanleitung Kapitel 5, Freigabe nötig).
 
 ## Niedrig
 

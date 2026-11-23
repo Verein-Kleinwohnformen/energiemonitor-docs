@@ -6,7 +6,7 @@ Der Energiemonitor ist ein offenes Messsystem für Kleinwohnformen (Tiny Houses,
 
 Der Energiemonitor ist **kein Produkt**. Der Verein verkauft und liefert ihn nicht und gibt keine Support-Zusagen. Es ist eine offene Plattform zum Nachbauen und Mitmachen.
 
-> **Status:** Die Entwicklung ist abgeschlossen. Zwei Monitore laufen im Langzeittest (Tiny House mit 99.7 % Verfügbarkeit von April bis September 2026, dazu ein Objekt mit Victron 48 V). Die Hauptstudie ist in Planung.
+> **Status:** Zwei Monitore laufen im Langzeittest (Tiny House mit 99.7 % Verfügbarkeit von April bis September 2026, dazu ein Objekt mit Victron 48 V). Seit November 2026 rechnet die Cloud jede Stunde Tageswerte, und die App zeigt Übersicht und Auswertung. Die Hauptstudie ist in Planung.
 
 ## Ich will einen Monitor bauen
 
@@ -15,6 +15,15 @@ Der Energiemonitor ist **kein Produkt**. Der Verein verkauft und liefert ihn nic
 3. **[Variablen](docs/variablen.md)**: alle Balena-Variablen im Überblick.
 
 Voraussetzungen: Du kennst einen Raspberry Pi, hast schon einmal Node-RED gesehen und löst Aufgaben im Terminal.
+
+## So sieht die App aus
+
+Die App läuft im Browser und auf dem Handy (als Web-App installierbar). Die Bilder zeigen ein Beispielhaus mit Demodaten.
+
+| Übersicht | Auswertung | Erfassen | Mehr |
+|---|---|---|---|
+| <img src="img/app/uebersicht.png" alt="Übersicht: Verbrauch dieser Woche, Eigenversorgung, Wohnklima" width="190"/> | <img src="img/app/auswertung-energie.png" alt="Auswertung: Woher kommt die Energie, Eigenversorgung" width="190"/> | <img src="img/app/erfassen.png" alt="Erfassen: Vorrat an Holzpellets und Propangas, letzte Einträge" width="190"/> | <img src="img/app/mehr-systemstatus.png" alt="Mehr: Systemstatus der Messpunkte" width="190"/> |
+| Wie viel Energie die Woche gebraucht hat, wie viel davon von der eigenen Sonne kam, wie behaglich es war | Watt pro Person, Herkunft der Energie, Monat für Monat, Heizen und Wohnklima über Woche, Monat, Saison oder Jahr | Holz, Pellets, Gas und Heizöl eintragen, die kein Zähler misst. Die App führt den Vorrat | Kommen die Daten an? Messpunkte, Mess-Schema, Haushalt, Download als XLSX |
 
 ## Zwei Betriebsvarianten
 
@@ -43,7 +52,9 @@ Forschungs- und Entwicklungsnotizen: [mioty-Basisstation und Sentinum Apollon (W
 | [kwf-energiemonitor-db](https://github.com/Verein-Kleinwohnformen/kwf-energiemonitor-db) | Node-RED-Connector (puffert Messwerte, sendet an die API), npm-Paket | Beta |
 | [energiemonitor-api](https://github.com/Verein-Kleinwohnformen/energiemonitor-api) | Cloud-API (Cloud Run) und XLSX-Export | produktiv im Langzeittest |
 | [energiemonitor-app](https://github.com/Verein-Kleinwohnformen/energiemonitor-app) | Flutter-Web-App | produktiv im Langzeittest |
-| [energiemonitor-nodered-flows](https://github.com/Verein-Kleinwohnformen/energiemonitor-nodered-flows) | Alte Beispiel-Flows | deprecated |
+| [energiemonitor-nodered-flows](https://github.com/Verein-Kleinwohnformen/energiemonitor-nodered-flows) | Alte Beispiel-Flows, dazu die Flows der Testgeräte (ein Branch pro Gerät) | veraltet, nur als Vorlage |
+
+Ältere Repos aus der Zeit vor 2024 (Azure-Prototyp, erste Hardware, Gehäuse) sind archiviert und werden nicht mehr gepflegt.
 
 ## Mitmachen
 
