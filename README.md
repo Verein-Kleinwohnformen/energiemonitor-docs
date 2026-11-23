@@ -12,6 +12,8 @@ Der Energiemonitor ist **kein Produkt**. Der Verein verkauft und liefert ihn nic
 
 1. **[Bauanleitung](docs/bauanleitung.md)**: von der Einkaufsliste bis zu den Kurven in der App. Rechne mit 6 bis 8 Stunden pro Monitor, wenn du die Technik schon kennst.
 2. **[Sicherheit](docs/sicherheit.md)**: eigene Passwörter und Schlüssel setzen. Das ist ein Pflichtschritt, bevor das Gerät online geht.
+
+> **Unbedingt: Jeder Monitor bekommt eigene Zugangsdaten.** `USERNAME`, `PASSWORD` und `ENCRIPTION_KEY` setzt du als Device-Variable mit eigenen, zufälligen Werten, bevor Node-RED das erste Mal startet. Nie die Werte aus einer Anleitung, der Flotte oder von einem anderen Gerät übernehmen. Dazu ein eigenes Hotspot-Passwort und ein Image ohne Dev-Modus.
 3. **[Variablen](docs/variablen.md)**: alle Balena-Variablen im Überblick.
 
 Voraussetzungen: Du kennst einen Raspberry Pi, hast schon einmal Node-RED gesehen und löst Aufgaben im Terminal.

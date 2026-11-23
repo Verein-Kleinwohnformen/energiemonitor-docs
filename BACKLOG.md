@@ -4,7 +4,11 @@ Offene Aufgaben über alle Repos. Priorität: hoch, mittel, niedrig.
 
 ## Hoch
 
-Zurzeit nichts.
+### emon02: Dev-Modus ausschalten, sobald das Gerät online ist
+
+- **Was:** emon02 läuft noch mit dem Dev-Image. emon01 und emon03 sind seit dem 23. November 2026 umgestellt.
+- **Ablauf:** Im Host-OS `config.json` sichern, nur `developmentMode` auf `false` setzen, neu starten. Prüfen, dass das Gerät offline geht und wiederkommt (`balena device reboot` wirkt nicht immer beim ersten Mal) und dass `balena device <UUID>` die Variante `prod` zeigt.
+- **Vor** der Umstellung auf das Heim-WLAN erledigen.
 
 ## Mittel
 
