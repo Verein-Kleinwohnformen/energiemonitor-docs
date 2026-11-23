@@ -6,7 +6,7 @@ Diese Anleitung führt durch den Bau eines Energiemonitors, standardmässig in *
 
 **Wichtig vorab:** Der Energiemonitor ist kein Produkt des Vereins. Der Verein verkauft und liefert keine Geräte und gibt keine Support-Zusagen. Das Team besteht aus Freiwilligen, Antworten können dauern.
 
-> **Sicherheit zuerst:** Das Gerät ist über die Balena Public Device URL aus dem Internet erreichbar. Setze **vor dem ersten Start** eigene Werte für `USERNAME`, `PASSWORD` und `ENCRIPTION_KEY` (Kapitel 7) und ein eigenes Hotspot-Passwort (Kapitel 8). Details in [Sicherheit](sicherheit.md).
+> **Sicherheit zuerst:** Das Gerät ist über die Balena Public Device URL aus dem Internet erreichbar. Setze **vor dem ersten Start** eigene Werte für `USERNAME`, `PASSWORD` und `ENCRIPTION_KEY` (Kapitel 7) und ein eigenes Hotspot-Passwort (Kapitel 8), und betreibe das Gerät nicht im Dev-Modus (Kapitel 6). Details in [Sicherheit](sicherheit.md).
 
 ## Inhalt
 
@@ -79,14 +79,17 @@ Du kannst den Monitor zuerst bauen und die Freischaltung parallel anfragen.
 ## 6. Flashen und Balena
 
 1. In [Balena Cloud](https://dashboard.balena-cloud.com/) eine **Flotte** anlegen (Gerätetyp: Raspberry Pi CM4 IO Board) und dein eigenes Fork des Containers deployen oder das Repo [energiemonitor-balena-nodered](https://github.com/Verein-Kleinwohnformen/energiemonitor-balena-nodered) mit `balena push` auf die Flotte laden.
-2. Zum Flashen das CM4 auf das **CM4-IO-Board** stecken. Dann in der Flotte: *Add device*, Gerätetyp CM4 IO Board wählen und den Anweisungen folgen. Mit Balena Etcher das Image auf das Board flashen.
+2. Zum Flashen das CM4 auf das **CM4-IO-Board** stecken. Dann in der Flotte: *Add device*, Gerätetyp CM4 IO Board wählen und den Anweisungen folgen. **Immer ohne Dev-Modus:** Im Dialog *Add device* die Edition *Production* wählen bzw. *Development mode* abwählen, bevor du das Image herunterlädst. Mit Balena Etcher das Image auf das Board flashen.
 3. CM4 zurück in die Edgebox einbauen und das Gerät starten. Es erscheint nach kurzer Zeit in der Flotte.
+4. **Dev-Modus prüfen:** `balena device <UUID>` muss bei der OS-Variante `prod` zeigen, nicht `dev`. Im Dev-Modus ist im lokalen Netz SSH als root ohne Passwort offen. Balena bietet nachträglich keinen Schalter im Dashboard: Ein Gerät mit `dev` flashst du am besten neu. Die Fernwartung über Balena (Terminal im Dashboard, `balena device ssh`) funktioniert auch ohne Dev-Modus.
+
+Vor einem Update des Host-OS (balenaOS) lies [balenaOS-Versionen](balena-os-versionen.md). Updates gehen nur vorwärts, und ein misslungenes Update braucht einen Stromunterbruch vor Ort.
 
 Die Flotten-Konfiguration (Device Tree) für die Edgebox: `"i2c_arm=on","spi=on","audio=on","enable_serial=1","pwr_led_activelow=off","act_led_trigger=none","act_led_activelow=off"`. Für das Modem die GPIOs `"6=op,dh","5=op,dh"` und den VPN-Check aktivieren (prüfen, ob dein Modem das braucht).
 
 ## 7. Variablen setzen
 
-Alle Variablen mit Bedeutung stehen in [Variablen](variablen.md). Pflicht pro Gerät:
+Alle Variablen mit Bedeutung stehen in [Variablen](variablen.md). Pflicht pro Gerät, als **Device-Variable** (nicht als Flottenvariable), mit **eigenen Werten für jedes Gerät**:
 
 | Variable | Wert |
 |---|---|
@@ -130,18 +133,21 @@ Das Gerät öffnet einen WLAN-Hotspot `energiemonitor`, an dem Shelly und andere
 
 ## 10. Node-RED-Flows
 
-Öffne die **Public Device URL** im Balena-Gerätepanel und melde dich mit **deinen** Zugangsdaten an. Gib die URL nicht weiter.
+Öffne Node-RED über einen Tunnel (`balena device tunnel <UUID> -p 80:8080`, dann `http://localhost:8080`) oder schalte für die Dauer der Arbeit die **Public Device URL** im Balena-Gerätepanel ein. Melde dich mit **deinen** Zugangsdaten an und gib die URL nicht weiter.
 
-Pro Sensor brauchst du einen kleinen Flow: Messwerte lesen, die benötigten Werte auswählen und aggregieren, `sensor_id` und `metering_point` gemäss deinem Messschema setzen und an den **KWF Datenbank-Connector** senden. Das Format steht in [Architektur](architektur.md). Der Connector ist als npm-Paket `@vereinkleinwohnformen/node-red-energiemonitor` in der Node-RED-Palette erhältlich. Setze im Connector das Sende-Intervall (zum Testen 1 Minute, im Betrieb 1 Stunde), die API-URL (aus `KWF_URL`) und den Device-Key (aus `KWF_KEY`).
+Pro Sensor brauchst du einen kleinen Flow: Messwerte lesen, die benötigten Werte auswählen und aggregieren, `sensor_id` und `metering_point` gemäss deinem Messschema setzen und an den **KWF Datenbank-Connector** senden. Das Format steht in [Architektur](architektur.md). Der Connector ist als npm-Paket `@vereinkleinwohnformen/node-red-energiemonitor` in der Node-RED-Palette erhältlich. Setze im Connector das Sende-Intervall (zum Testen 1 Minute, im Betrieb 1 Stunde), die API-URL (aus `KWF_URL`) und als Device-Key `${KWF_KEY}` (bis Connector 0.4.x) bzw. ein leeres Feld (ab 0.5.0): Der Connector liest dann die Variable `KWF_KEY`.
 
-Die alten Beispiel-Flows ([energiemonitor-nodered-flows](https://github.com/Verein-Kleinwohnformen/energiemonitor-nodered-flows)) sind **deprecated**, taugen aber als Vorlage. Die Zugangsdaten zu Diensten wie Netatmo trägst du selbst in Node-RED ein. Sie werden mit deinem `ENCRIPTION_KEY` verschlüsselt und gehören nie in ein Git-Repo.
+Fertige Flows zum Importieren gibt es noch nicht für jeden Sensor. Die alten Beispiel-Flows im Branch `master` von [energiemonitor-nodered-flows](https://github.com/Verein-Kleinwohnformen/energiemonitor-nodered-flows) sind veraltet, taugen aber als Vorlage (Shelly, Netatmo mit OAuth2, PZEM). Die Zugangsdaten zu Diensten wie Netatmo trägst du selbst in Node-RED ein. Sie werden mit deinem `ENCRIPTION_KEY` verschlüsselt und gehören nie in ein Git-Repo. Wenn du deine Flows mit der Projektfunktion von Node-RED versionierst, nimm ein **privates** Repo: Ein Flow verrät IP-Adressen und Geräte in deinem Haus.
+
+**Wenn die Flows laufen:** Schalte die Public Device URL wieder aus. Die Messung läuft ohne sie weiter. Für spätere Arbeiten öffnest du wieder einen Tunnel.
 
 ## 11. Kontrolle
 
 1. Im Node-RED-Debug siehst du eingehende Werte und im Connector „Inserted new record“.
-2. Erst nach der Freischaltung (Variante A) erscheinen die Messpunkte in der [App](https://energiemonitor-kwf.web.app/) als online.
-3. Mache einen **Testexport** in der App (maximal 31 Tage) und prüfe die Werte.
-4. Prüfe im Balena-Dashboard, dass alle Container laufen.
+2. Erst nach der Freischaltung (Variante A) erscheinen die Messpunkte in der [App](https://energiemonitor-kwf.web.app/) als online (*Mehr > Systemstatus*). Übersicht und Auswertung füllen sich, sobald die Cloud die ersten Tageswerte gerechnet hat, spätestens zur nächsten vollen Stunde.
+3. In der App unter *Mehr > Haushalt* die Zahl der Personen eintragen. Ohne sie fehlen die Werte pro Person.
+4. Mache einen **Testexport** in der App (*Mehr > Daten herunterladen*, längere Zeiträume kommen als Monatsdateien) und prüfe die Werte.
+5. Prüfe im Balena-Dashboard, dass alle Container laufen.
 
 ## 12. Betrieb
 
