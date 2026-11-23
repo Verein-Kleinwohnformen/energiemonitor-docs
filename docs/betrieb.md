@@ -26,7 +26,7 @@ Host-OS-Updates (balenaOS) gehen nur vorwärts und können ein Gerät bis zu ein
 | Keine Messpunkte in der App | Node-RED-Log: erscheint „Inserted new record“? Stimmen `KWF_URL`, `KWF_KEY`, `DEVICEID`? Ist das Gerät im KWF-System angelegt? |
 | Node-RED startet ohne Flows | Log: „Failed to decrypt credentials“: der `ENCRIPTION_KEY` passt nicht zu den gespeicherten Zugangsdaten, siehe [Schlüssel migrieren](migration-verschluesselungsschluessel.md) |
 | Node-RED startet gar nicht | `PASSWORD` fehlt oder ist leer (`settings.js` beendet sich dann) |
-| Netatmo liefert keine Werte | Refresh-Token neu erzeugen (dev.netatmo.com), `NETATMO_CLIENT`, `NETATMO_SECRET`, `NETATMO_ADDRESS` prüfen |
+| Netatmo liefert keine Werte | Status am Netatmo-Node prüfen. Bei "authorisation failed": Refresh-Token neu erzeugen (dev.netatmo.com), als `NETATMO_REFRESH_TOKEN` setzen (Node-RED startet neu). Sonst `NETATMO_CLIENT`, `NETATMO_SECRET`, `NETATMO_ADDRESS` prüfen |
 | Shelly fehlt | Hängt er am Hotspot `energiemonitor`? Stimmt `SHELLY_IP`? |
 | PZEM liefert nichts | Adresse `0x01`, Shunt-Bereich, A/B nicht vertauscht, `/dev/ttyUSB0` vorhanden? |
 | BLE-Scanner läuft nicht | Ohne konfigurierte Gadgets beendet er sich absichtlich. Mit Gadgets: MAC-Adressen, Anzahl Namen/Offsets, `DEBUG_LEVEL=1` |
