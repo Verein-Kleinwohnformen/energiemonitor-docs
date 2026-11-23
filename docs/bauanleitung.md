@@ -89,6 +89,8 @@ Die Flotten-Konfiguration (Device Tree) für die Edgebox: `"i2c_arm=on","spi=on"
 
 ## 7. Variablen setzen
 
+> **Unbedingt eigene Zugangsdaten für jeden Monitor.** Wer `USERNAME` und `PASSWORD` kennt, kann Node-RED übernehmen und damit alles steuern, was das Gerät im Haus erreicht. Darum gilt beim Bauen jedes Monitors: eigene, zufällige Werte, als Device-Variable, gesetzt **bevor** Node-RED das erste Mal startet. Nie Werte aus dieser Anleitung, aus der Flotte oder von einem anderen Gerät übernehmen. Bewahre sie in einem Passwortmanager auf.
+
 Alle Variablen mit Bedeutung stehen in [Variablen](variablen.md). Pflicht pro Gerät, als **Device-Variable** (nicht als Flottenvariable), mit **eigenen Werten für jedes Gerät**:
 
 | Variable | Wert |
