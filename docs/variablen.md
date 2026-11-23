@@ -29,6 +29,7 @@ Die Spalte „Beispiel“ enthält nur **Platzhalter**. Echte Werte (Passwörter
 | `NETATMO_CLIENT` | node-red | mit Netatmo | `<CLIENT-ID>` | Client-ID deiner Netatmo-App |
 | `NETATMO_SECRET` | node-red | mit Netatmo | `<CLIENT-SECRET>` | Client-Secret. Geheim halten |
 | `NETATMO_ADDRESS` | node-red | mit Netatmo, pro Gerät | `00:00:00:00:00:00` | MAC der Station, damit nur sie ausgewertet wird |
+| `NETATMO_REFRESH_TOKEN` | node-red | mit Netatmo, pro Gerät, nur beim ersten Start | `<REFRESH-TOKEN>` | Initiales Refresh-Token aus dem Token-Generator. Danach verwaltet der Netatmo-Node das Token selbst (Datei `/data/node-red/creds.json`). Geheim halten |
 | `VICTRON_IP` | node-red | mit Victron | `0.0.0.0` | IP des GX-Geräts im LAN |
 | `VICTRON_SERIAL` | node-red | mit Victron | `000000000000` | Portal-ID des GX für die MQTT-Topics |
 
