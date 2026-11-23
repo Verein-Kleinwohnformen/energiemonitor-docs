@@ -79,9 +79,9 @@ Du kannst den Monitor zuerst bauen und die Freischaltung parallel anfragen.
 ## 6. Flashen und Balena
 
 1. In [Balena Cloud](https://dashboard.balena-cloud.com/) eine **Flotte** anlegen (Gerätetyp: Raspberry Pi CM4 IO Board) und dein eigenes Fork des Containers deployen oder das Repo [energiemonitor-balena-nodered](https://github.com/Verein-Kleinwohnformen/energiemonitor-balena-nodered) mit `balena push` auf die Flotte laden.
-2. Zum Flashen das CM4 auf das **CM4-IO-Board** stecken. Dann in der Flotte: *Add device*, Gerätetyp CM4 IO Board wählen und den Anweisungen folgen. Mit Balena Etcher das Image auf das Board flashen.
+2. Zum Flashen das CM4 auf das **CM4-IO-Board** stecken. Dann in der Flotte: *Add device*, Gerätetyp CM4 IO Board wählen und den Anweisungen folgen. **Immer ohne Dev-Modus:** Im Dialog *Add device* die Edition *Production* wählen bzw. *Development mode* abwählen, bevor du das Image herunterlädst. Mit Balena Etcher das Image auf das Board flashen.
 3. CM4 zurück in die Edgebox einbauen und das Gerät starten. Es erscheint nach kurzer Zeit in der Flotte.
-4. **Dev-Modus aus:** Wähle beim Herunterladen des Images die Variante *Production* oder schalte im Gerätepanel den Development-Modus aus, sobald das Gerät läuft. Im Dev-Modus ist im lokalen Netz SSH als root ohne Passwort offen. Die Fernwartung über Balena (Terminal im Dashboard, `balena device ssh`) funktioniert auch ohne Dev-Modus.
+4. **Dev-Modus prüfen:** `balena device <UUID>` muss bei der OS-Variante `prod` zeigen, nicht `dev`. Im Dev-Modus ist im lokalen Netz SSH als root ohne Passwort offen. Balena bietet nachträglich keinen Schalter im Dashboard: Ein Gerät mit `dev` flashst du am besten neu. Die Fernwartung über Balena (Terminal im Dashboard, `balena device ssh`) funktioniert auch ohne Dev-Modus.
 
 Vor einem Update des Host-OS (balenaOS) lies [balenaOS-Versionen](balena-os-versionen.md). Updates gehen nur vorwärts, und ein misslungenes Update braucht einen Stromunterbruch vor Ort.
 

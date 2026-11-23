@@ -9,7 +9,7 @@ Der Monitor steht in deinem Haus. Er hängt im WLAN oder Mobilfunk, sieht deinen
 1. **Eigenes `USERNAME` und `PASSWORD`** als **Device-Variable** setzen, nie als Flottenvariable. Stark, zufällig, für jedes Gerät ein anderes. Nie ein Passwort aus einer Anleitung, einem Beispiel oder von einem anderen Gerät übernehmen.
 2. **Eigener `ENCRIPTION_KEY`** als Device-Variable, für jedes Gerät ein anderer. Mit ihm verschlüsselt Node-RED die gespeicherten Zugangsdaten (`flows_cred.json`). Erzeugen mit `openssl rand -base64 32`. Der Variablenname enthält den Tippfehler, weil Node-RED ihn so liest.
 3. **Eigenes Hotspot-Passwort** in der Datei `balena-hotspot` (mindestens 12 Zeichen, zufällig).
-4. **Produktiv-Image statt Dev-Modus:** Lade in Balena das Image in der Variante *Production* herunter, oder schalte den Dev-Modus des Geräts aus. Im Dev-Modus ist im lokalen Netz SSH als root **ohne Passwort** offen (Port 22222). Jedes Gerät im Hotspot oder Heim-WLAN käme so auf den Monitor.
+4. **Immer ohne Dev-Modus flashen:** Wähle beim Herunterladen des Images in Balena die Edition *Production* bzw. wähle *Development mode* ab. Nachträglich gibt es dafür keinen Schalter im Dashboard. Im Dev-Modus ist im lokalen Netz SSH als root **ohne Passwort** offen (Port 22222). Jedes Gerät im Hotspot oder Heim-WLAN käme so auf den Monitor.
 5. Passwörter und Schlüssel in einem **Passwortmanager** aufbewahren, nicht im Chat, nicht im Repo.
 
 Setze die Werte, **bevor** der Container das erste Mal startet. Wenn du den Schlüssel später änderst, kann Node-RED die bereits gespeicherten Zugangsdaten nicht mehr lesen: siehe [Schlüssel migrieren](migration-verschluesselungsschluessel.md).
